@@ -3,7 +3,7 @@ CFLAGS=-Wall -fPIC -O3 -ansi -pedantic-errors
 LDFLAGS=-lgsl -lcblas -lm
 PREFIX= /usr/local
 
-optpricer : src/optpricer.c gbm.o black_scholes.o
+opt-pricer : src/opt-pricer.c gbm.o black_scholes.o
 	@$(CC) $(CFLAGS) $^ $(LDFLAGS) -o $@
 
 gbm.o : src/gbm_mc.c
@@ -13,14 +13,14 @@ black_scholes.o : src/black_scholes.c
 	@$(CC) $(CFLAGS) -c $^ $(LDFLAGS) -o $@
 
 .PHONY: install
-install : optpricer
+install : opt-pricer
 	@mkdir -p $(DESTDIR)$(PREFIX)/bin
-	@cp $< $(DESTDIR)$(PREFIX)/bin/optpricer
+	@cp $< $(DESTDIR)$(PREFIX)/bin/opt-pricer
 	@rm -f $<
 
 .PHONY: uninstall
 uninstall :
-	@rm -f $(DESTDIR)$(PREFIX)/bin/optpricer
+	@rm -f $(DESTDIR)$(PREFIX)/bin/opt-pricer
 
 .PHONY: clean
 clean :
