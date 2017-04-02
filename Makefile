@@ -1,8 +1,9 @@
 CC=gcc
 CFLAGS=-Wall -fPIC -O3 -ansi -pedantic-errors
 LDFLAGS=-lgsl -lcblas -lm
+PREFIX= /usr/local
 
-pricer : src/optpricer.c gbm.o black_scholes.o
+optpricer : src/optpricer.c gbm.o black_scholes.o
 	$(CC) $(CFLAGS) $^ $(LDFLAGS) -o $@
 
 gbm.o : src/gbm_mc.c
@@ -11,6 +12,15 @@ gbm.o : src/gbm_mc.c
 black_scholes.o : src/black_scholes.c
 	$(CC) $(CFLAGS) -c $^ $(LDFLAGS) -o $@
 
+.PHONY: install
+install : optpricer
+	mkdir -p $(DESTDIR)$(PREFIX)/bin
+	cp $< $(DESTDIR)$(PREFIX)/bin/optpricer
+
+.PHONY: uninstall
+uninstall :
+	rm -f $(DESTDIR)$(PREFIX)/bin/optpricer
+
 .PHONY: clean
-clean:
+clean :
 	rm -f gbm.o black_scholes.o
