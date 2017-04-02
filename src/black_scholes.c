@@ -3,10 +3,7 @@
 #include "black_scholes.h"
 #include <cblas.h>
 #include <math.h>
-#include <stdio.h>
-#include <string.h>
 #include <time.h>
-#include <unistd.h>
 
 double normalcdf(double value)
 {
