@@ -1,6 +1,6 @@
 CC=gcc
 CFLAGS=-Wall -fPIC -O3 -ansi -pedantic-errors
-LDFLAGS=-lcblas -lm
+LDFLAGS=-lm
 PREFIX= /usr/local
 
 opt-pricer : src/opt-pricer.c gbm.o black_scholes.o utils.o

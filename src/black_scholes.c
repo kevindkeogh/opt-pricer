@@ -2,7 +2,6 @@
 
 #include "black_scholes.h"
 #include "utils.h"
-#include <cblas.h>
 #include <math.h>
 #include <time.h>
 
