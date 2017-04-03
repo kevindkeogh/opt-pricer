@@ -27,6 +27,7 @@ double normalcdf(double z)
 
 double gaussrand()
 {
+	/* Marsaglia and Bray, ``A Convenient Method for Generating Normal Variables'' */
 	static double V1, V2, S;
 	static int phase = 0;
 	double X;
