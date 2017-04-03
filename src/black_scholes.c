@@ -1,14 +1,10 @@
 #define _XOPEN_SOURCE
 
 #include "black_scholes.h"
+#include "utils.h"
 #include <cblas.h>
 #include <math.h>
 #include <time.h>
-
-double normalcdf(double value)
-{
-	return 0.5 * erfc(-value * M_SQRT1_2);
-}
 
 double bsm(double spot, double rfr, double vol, double strike,
 		struct tm expiry, struct tm value, int type)
