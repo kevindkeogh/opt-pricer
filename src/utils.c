@@ -1,5 +1,3 @@
-#define M_SQRT1_2  0.707106781186547524401
-
 #include <math.h>
 #include <stdlib.h>
 
