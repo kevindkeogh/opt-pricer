@@ -13,7 +13,6 @@ double gbm_simulation(double spot, double rfr, double vol, double tte, double ra
 	drift = (rfr - pow(vol, 2) / 2) * tte;
 	stoch = vol * pow(tte, 0.5) * rand;
 	return spot * exp(drift + stoch);
-
 }
 
 double gbm(double spot, double rfr, double vol, double strike, struct tm expiry,
