@@ -15,46 +15,49 @@ int main(int argc, char *argv[])
 	int opt, type = 0;
 	struct tm expiry, value;
 
+    extern char *optarg;
+    extern int getopt();
+
 	memset(&expiry, 0, sizeof(expiry));
 	memset(&value, 0, sizeof(value));
 
 	while ((opt = getopt(argc, argv, "s:k:r:v:d:e:n:cp")) != -1) {
 		switch (opt) {
-		case 's':
+		case 's': /* spot */
 			if (sscanf(optarg, "%lf", &spot) == EOF) {
 				return 1;
 			};
 			break;
-		case 'k':
+		case 'k': /* strike */
 			if (sscanf(optarg, "%lf", &strike) == EOF) {
 				return 1;
 			};
 			break;
-		case 'r':
+		case 'r': /* risk-free rate */
 			if (sscanf(optarg, "%lf.", &rfr) == EOF) {
 				return 1;
 			};
 			break;
-		case 'v':
+		case 'v': /* implied volatility */
 			if (sscanf(optarg, "%lf", &vol) == EOF) {
 				return 1;
 			};
 			break;
-		case 'n':
+		case 'e': /* expiry date, must be YYYY-MM-DD */
+			strptime(optarg, "%Y-%m-%d", &expiry);
+			break;
+		case 'd': /* valuation date, must be YYYY-MM-DD */
+			strptime(optarg, "%Y-%m-%d", &value);
+			break;
+		case 'n': /* number of simulations */
 			if (sscanf(optarg, "%lf", &sims) == EOF) {
 				return 1;
 			};
 			break;
-		case 'e':
-			strptime(optarg, "%Y-%m-%d", &expiry);
-			break;
-		case 'd':
-			strptime(optarg, "%Y-%m-%d", &value);
-			break;
-		case 'c':
+		case 'c': /* set as call */
 			type = 1;
 			break;
-		case 'p':
+		case 'p': /* set as put */
 			type = -1;
 			break;
 		}

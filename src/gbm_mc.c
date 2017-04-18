@@ -9,7 +9,9 @@
 double gbm_simulation(double spot, double rfr, double vol, double tte, double rand)
 {
 	/* S_T = S_0e^{[r-\frac{\sigma^2}{2}]t + \sigma\sqrt{t}\xi_i} */
+
 	double drift, stoch;
+
 	drift = (rfr - pow(vol, 2) / 2) * tte;
 	stoch = vol * pow(tte, 0.5) * rand;
 	return spot * exp(drift + stoch);
