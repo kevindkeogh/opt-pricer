@@ -4,16 +4,16 @@ LDFLAGS=-lm
 PREFIX= /usr/local
 
 opt-pricer : src/opt-pricer.c gbm.o black_scholes.o utils.o
-	@$(CC) $(CFLAGS) $^ -o $@
+	@$(CC) $(CFLAGS) $^ $(LDFLAGS) -o $@
 
 gbm.o : src/gbm_mc.c
-	@$(CC) $(CFLAGS) -c $^ -o $@
+	@$(CC) $(CFLAGS) -c $^ $(LDFLAGS) -o $@
 
 black_scholes.o : src/black_scholes.c
-	@$(CC) $(CFLAGS) -c $^ -o $@
+	@$(CC) $(CFLAGS) -c $^ $(LDFLAGS) -o $@
 
 utils.o : src/utils.c
-	@$(CC) $(CFLAGS) -c $^ -o $@
+	@$(CC) $(CFLAGS) -c $^ $(LDFLAGS) -o $@
 
 .PHONY: install
 install : opt-pricer
