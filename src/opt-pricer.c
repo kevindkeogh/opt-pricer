@@ -34,7 +34,7 @@ static struct helptext options[] = {
 	 "Call flag"},
 	{"-p, --put",
 	 "Put or call flag"},
-	{"-h",
+	{"-h, --help",
 	 "This help text"},
 	{ NULL , NULL }
 };
@@ -49,6 +49,7 @@ static struct option long_options[] = {
 	{"expiry-date",		required_argument,	0,	'e'},
 	{"call",		no_argument,		0,	'c'},
 	{"put",			no_argument,		0,	'p'},
+	{"help",		no_argument,		0,	'h'},
 	{0, 0, 0, 0}
 };
 
@@ -78,7 +79,7 @@ int main(int argc, char *argv[])
 	memset(&expiry, 0, sizeof(expiry));
 	memset(&value, 0, sizeof(value));
 
-	while ((opt = getopt_long(argc, argv, "s:k:r:v:d:e:N:cp", long_options, &option_index)) != -1) {
+	while ((opt = getopt_long(argc, argv, "s:k:r:v:d:e:N:cp:h", long_options, &option_index)) != -1) {
 		switch (opt) {
 		case 's':
 			if (sscanf(optarg, "%lf", &spot) == EOF) {
