@@ -3,6 +3,10 @@
 #include "black_scholes.h"
 #include "gbm_mc.h"
 
+#ifdef __MINGW32__
+#include "strptime.h"
+#endif
+
 #include <stdio.h>
 #include <string.h>
 #include <time.h>

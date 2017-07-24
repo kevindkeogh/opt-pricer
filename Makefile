@@ -1,5 +1,7 @@
 CC=gcc
+WINDOWS_CC=x86_64-w64-mingw32-gcc
 CFLAGS=-Wall -fPIC -O3 -ansi -pedantic-errors
+WINDOWS_CFLAGS= -Wall -O3 -ansi -pedantic-errors
 LDFLAGS=-lm
 PREFIX= /usr/local
 
@@ -15,6 +17,17 @@ black_scholes.o : src/black_scholes.c
 utils.o : src/utils.c
 	@$(CC) $(CFLAGS) -c $^ $(LDFLAGS) -o $@
 
+strptime.o : src/strptime.c
+	@$(CC) $(CFLAGS) -c $^ $(LDFLAGS) -o $@
+
+opt-pricer.exe : CC=$(WINDOWS_CC)
+opt-pricer.exe : CFLAGS=$(WINDOWS_CFLAGS)
+opt-pricer.exe : src/opt-pricer.c gbm.o black_scholes.o utils.o strptime.o
+	@$(WINDOWS_CC) $(WINDOWS_CFLAGS) $^ $(LDFLAGS) -o $@
+
+.PHONY: windows
+windows: opt-pricer.exe
+
 .PHONY: install
 install : opt-pricer
 	@mkdir -p $(DESTDIR)$(PREFIX)/bin
@@ -27,4 +40,4 @@ uninstall :
 
 .PHONY: clean
 clean :
-	@rm -f gbm.o black_scholes.o utils.o
+	@rm -f gbm.o black_scholes.o utils.o strptime.o
