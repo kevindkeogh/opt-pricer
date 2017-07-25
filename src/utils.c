@@ -1,5 +1,10 @@
 #include <math.h>
 #include <stdlib.h>
+#include <time.h>
+
+
+#define M_PI	3.14159265358979323846264338327950288
+
 
 double normalcdf(double z)
 {
@@ -22,6 +27,13 @@ double normalcdf(double z)
 	y = 1 - (((((a5 * t + a4) * t) + a3) * t + a2) * t + a1) * t * exp(-z * z);
 	return 0.5 * (1 + sign * y);
 }
+
+
+double normalpdf(double z)
+{
+	return exp(-0.5 * pow(z, 2)) / pow(M_PI * 2, 0.5);
+}
+
 
 double gaussrand()
 {

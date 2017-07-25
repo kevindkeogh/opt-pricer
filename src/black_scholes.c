@@ -5,20 +5,22 @@
 #include <math.h>
 #include <time.h>
 
-double bsm(double spot, double rfr, double vol, double strike,
-		struct tm expiry, struct tm value, int type)
+
+void bsm(struct Option *opt)
 {
 	double d1, d2, tte, price;
 	time_t value_date, expiry_date;
 
-	expiry_date = mktime(&expiry);
-	value_date = mktime(&value);
+	expiry_date = mktime(opt->expiry_date);
+	value_date = mktime(opt->value_date);
 	tte = difftime(expiry_date, value_date) / (60 * 60 * 24 * 365);
-	d1 = log(spot / strike) + tte * (rfr + pow(vol, 2) / 2)
-		/ (vol * pow(tte, 0.5));
-	d2 = d1 - (vol * pow(tte, 0.5));
 
-	price = spot * normalcdf(d1 * type) * type -
-		strike * exp(-rfr * tte) * normalcdf(d2 * type) * type;
-	return price;
+	d1 = (log(opt->spot / opt->strike) + tte * (opt->rfr + pow(opt->vol, 2) / 2))
+		/ (opt->vol * pow(tte, 0.5));
+	d2 = d1 - (opt->vol * pow(tte, 0.5));
+
+	price = opt->spot * normalcdf(d1 * opt->type) * opt->type - opt->strike *
+		exp(-opt->rfr * tte) * normalcdf(d2 * opt->type) * opt->type;
+	opt->fv = price;
+	opt->vega = opt->spot * exp(-opt->rfr * tte) * pow(tte, 0.5) * normalpdf(d1);
 }

@@ -17,26 +17,43 @@ double gbm_simulation(double spot, double rfr, double vol, double tte, double ra
 	return spot * exp(drift + stoch);
 }
 
-double gbm(double spot, double rfr, double vol, double strike, struct tm expiry,
-		struct tm value, int type, int sims)
+void gbm(struct Option *opt)
 {
-	double tte, expiry_date, value_date, level, price, rand;
-	double results = 0;
+	double tte, expiry_date, value_date, level, rand;
+	double delta_shift = 0, vega_shift = 0, theta_shift = 0, rho_shift = 0;
+	double price, delta, vega, theta, rho;
+	double base = 0;
 	int i;
 
-	if (sims < 1) sims = 1;
+	if (opt->sims < 1) opt->sims = 1;
 
-	expiry_date = mktime(&expiry);
-	value_date = mktime(&value);
+	expiry_date = mktime(opt->expiry_date);
+	value_date = mktime(opt->value_date);
 	tte = difftime(expiry_date, value_date) / (60 * 60 * 24 * 365);
 
-	for (i=0; i<sims; i++) {
+	for (i=0; i<opt->sims; i++) {
 		rand = gaussrand();
-		level = gbm_simulation(spot, rfr, vol, tte, rand);
-		results += max((level - strike) * type, 0);
+		level = gbm_simulation(opt->spot, opt->rfr, opt->vol, tte, rand);
+		base += max((level - opt->strike) * opt->type, 0);
+		level = gbm_simulation(opt->spot + 0.01, opt->rfr, opt->vol, tte, rand);
+		delta_shift += max((level - opt->strike) * opt->type, 0);
+		level = gbm_simulation(opt->spot, opt->rfr, opt->vol + 0.01, tte, rand);
+		vega_shift += max((level - opt->strike) * opt->type, 0);
+		level = gbm_simulation(opt->spot, opt->rfr, opt->vol, tte + 1/365, rand);
+		theta_shift += max((level - opt->strike) * opt->type, 0);
+		level = gbm_simulation(opt->spot, opt->rfr + 0.0001, opt->vol, tte, rand);
+		rho_shift += max((level - opt->strike) * opt->type, 0);
 	}
 
-	price = results / sims * 1 / pow((1 + rfr), tte);
+	price = base / opt->sims * 1 / pow((1 + opt->rfr), tte);
+	delta = delta_shift / opt->sims * 1 / pow((1 + opt->rfr), tte);
+	vega = vega_shift / opt->sims * 1 / pow((1 + opt->rfr), tte);
+	theta = theta_shift / opt->sims * 1 / pow((1 + opt->rfr), tte);
+	rho = rho_shift / opt->sims * 1 / pow((1 + opt->rfr), tte);
 
-	return price;
+	opt->fv = price;
+	opt->delta = (delta - price) * 100 * opt->spot;
+	opt->vega = (vega - price) * opt->spot;
+	opt->theta = (theta - price) * opt->spot;
+	opt->rho = (rho - price) * opt->spot;
 }
