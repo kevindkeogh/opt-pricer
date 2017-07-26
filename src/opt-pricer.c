@@ -73,7 +73,7 @@ int print_help(void)
 int main(int argc, char *argv[])
 {
 	double spot = 0, strike = 0, rfr = 0, vol = 0, sims = 1000;
-	char expiry_date[11], value_date[11], buffer[1024];
+	char expiry_date[11], value_date[11];
 	int opt, option_index = 0, type = 0;
 	struct tm value, expiry;
 	struct Option bs_opt, mc_opt;
@@ -84,7 +84,9 @@ int main(int argc, char *argv[])
 	memset(&expiry, 0, sizeof(expiry));
 	memset(&value, 0, sizeof(value));
 
-	while ((opt = getopt_long(argc, argv, "s:k:r:v:d:e:N:cp:h", long_options, &option_index)) != -1) {
+	srand(time(NULL));
+
+	while ((opt = getopt_long(argc, argv, "s:k:r:v:d:e:N:cph", long_options, &option_index)) != -1) {
 		switch (opt) {
 			case 's':
 				if (sscanf(optarg, "%lf", &spot) == EOF) {
@@ -133,14 +135,16 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 
-	bs_opt.spot = spot;
-	bs_opt.strike = strike;
-	bs_opt.expiry_date = &expiry;
-	bs_opt.value_date = &value;
-	bs_opt.rfr = rfr;
-	bs_opt.vol = vol;
-	bs_opt.type = type;
+	bs_opt.spot        = mc_opt.spot        = spot;
+	bs_opt.strike      = mc_opt.strike      = strike;
+	bs_opt.expiry_date = mc_opt.expiry_date = &expiry;
+	bs_opt.value_date  = mc_opt.value_date  = &value;
+	bs_opt.rfr         = mc_opt.rfr         = rfr;
+	bs_opt.vol         = mc_opt.vol         = vol;
+	bs_opt.type        = mc_opt.type        = type;
+	mc_opt.sims = sims;
 
+	/*
 	mc_opt.spot = spot;
 	mc_opt.strike = strike;
 	mc_opt.expiry_date = &expiry;
@@ -148,13 +152,13 @@ int main(int argc, char *argv[])
 	mc_opt.rfr = rfr;
 	mc_opt.vol = vol;
 	mc_opt.type = type;
-	mc_opt.sims = sims;
+	*/
 
 	strftime(expiry_date, 11, "%Y-%m-%d", &expiry);
 	strftime(value_date, 11, "%Y-%m-%d", &value);
 	bsm(&bs_opt);
 	gbm(&mc_opt);
-	sprintf(&buffer[0],
+	printf(
 		"\nValuation date: %s\n\n"
 		"	              | BS Analytic | BS Monte Carlo |\n"
 		"	 ---------------------------------------------\n"
@@ -167,11 +171,11 @@ int main(int argc, char *argv[])
 		"	 |sims:     | %4.2f| %4.2f|\n"
 		"	 |exp:      | %4.2s| %4.2f|\n"
 		*/
-		"	 |Fair value: | %10.2f  | %13.2f  |\n"
-		"	 |Delta:      | %10.2f  | %13.2f  |\n"
-		"	 |Vega:       | %10.2f  | %13.2f  |\n"
+		"	 |Fair value: |   %8.4f  |   %11.4f  |\n"
+		"	 |Delta:      |   %8.4f  |   %11.4f  |\n"
+		"	 |Vega:       |   %8.4f  |   %11.4f  |\n"
 		"	 |Theta:      |   %8.4f  |   %11.4f  |\n"
-		"	 |Rho :       |   %8.4f  |   %11.4f  |\n\n",
+		"	 |Rho:        |   %8.4f  |   %11.4f  |\n",
 		value_date,
 		bs_opt.type, mc_opt.type,
 		bs_opt.spot, mc_opt.spot,
@@ -183,6 +187,12 @@ int main(int argc, char *argv[])
 		bs_opt.vega, mc_opt.vega,
 		bs_opt.theta, mc_opt.theta,
 		bs_opt.rho, mc_opt.rho);
-	printf("%s", buffer);
+	printf(
+		"	 ---------------------------------------------\n\n"
+	      );
+	/*
+	printf("%s", buffer1);
+	printf("%s", buffer2);
+	*/
 	return 0;
 }

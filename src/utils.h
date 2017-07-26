@@ -1,6 +1,8 @@
 #ifndef UTILS_H
 #define UTILS_H
 
+void srand(unsigned int seed);
+
 double normalcdf(double z);
 
 double normalpdf(double z);
@@ -18,7 +20,7 @@ struct Option {
 	double spot;
 	double rfr;
 	double vol;
-	int sims;
+	long sims;
 
 	/* fv and greeks */
 	double fv;

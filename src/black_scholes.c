@@ -22,5 +22,5 @@ void bsm(struct Option *opt)
 	price = opt->spot * normalcdf(d1 * opt->type) * opt->type - opt->strike *
 		exp(-opt->rfr * tte) * normalcdf(d2 * opt->type) * opt->type;
 	opt->fv = price;
-	opt->vega = opt->spot * exp(-opt->rfr * tte) * pow(tte, 0.5) * normalpdf(d1);
+	opt->vega = opt->spot / 100 * exp(-opt->rfr * tte) * pow(tte, 0.5) * normalpdf(d1);
 }

@@ -35,25 +35,25 @@ void gbm(struct Option *opt)
 		rand = gaussrand();
 		level = gbm_simulation(opt->spot, opt->rfr, opt->vol, tte, rand);
 		base += max((level - opt->strike) * opt->type, 0);
-		level = gbm_simulation(opt->spot + 0.01, opt->rfr, opt->vol, tte, rand);
+		level = gbm_simulation(opt->spot + 1, opt->rfr, opt->vol, tte, rand);
 		delta_shift += max((level - opt->strike) * opt->type, 0);
 		level = gbm_simulation(opt->spot, opt->rfr, opt->vol + 0.01, tte, rand);
 		vega_shift += max((level - opt->strike) * opt->type, 0);
-		level = gbm_simulation(opt->spot, opt->rfr, opt->vol, tte + 1/365, rand);
+		level = gbm_simulation(opt->spot, opt->rfr, opt->vol, tte - 1./365., rand);
 		theta_shift += max((level - opt->strike) * opt->type, 0);
-		level = gbm_simulation(opt->spot, opt->rfr + 0.0001, opt->vol, tte, rand);
+		level = gbm_simulation(opt->spot, opt->rfr + 0.01, opt->vol, tte, rand);
 		rho_shift += max((level - opt->strike) * opt->type, 0);
 	}
 
 	price = base / opt->sims * 1 / pow((1 + opt->rfr), tte);
 	delta = delta_shift / opt->sims * 1 / pow((1 + opt->rfr), tte);
 	vega = vega_shift / opt->sims * 1 / pow((1 + opt->rfr), tte);
-	theta = theta_shift / opt->sims * 1 / pow((1 + opt->rfr), tte);
-	rho = rho_shift / opt->sims * 1 / pow((1 + opt->rfr), tte);
+	theta = theta_shift / opt->sims * 1 / pow((1 + opt->rfr), tte - 1./365.);
+	rho = rho_shift / opt->sims * 1 / pow((1 + opt->rfr + 0.01), tte);
 
 	opt->fv = price;
-	opt->delta = (delta - price) * 100 * opt->spot;
-	opt->vega = (vega - price) * opt->spot;
-	opt->theta = (theta - price) * opt->spot;
-	opt->rho = (rho - price) * opt->spot;
+	opt->delta = (delta - price);
+	opt->vega = (vega - price);
+	opt->theta = (theta - price);
+	opt->rho = (rho - price);
 }
