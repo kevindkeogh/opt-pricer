@@ -1,0 +1,12 @@
+Demonstration of a black-scholes model in C
+
+Note that there are two models, a pure Monte Carlo implementation
+and the closed form black scholes equation.
+
+Recommended number of simulations is 100,000,000 for Gamma convergence, the
+other Greeks converge by 1,000,000.
+
+TODO:
+ 1. Find a C implementation for Sobol sequence so that Gamma convergence
+    is faster
+ 2. Tests...

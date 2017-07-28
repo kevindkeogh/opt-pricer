@@ -8,6 +8,7 @@
 #include "strptime.h"
 #endif
 
+#include <locale.h>
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
@@ -67,6 +68,12 @@ int print_help(void)
 		printf(" %-25s %s\n", options[i].opt, options[i].desc);
 	}
 	return 0;
+}
+
+
+char* read_type(struct Option opt)
+{
+	return (opt.type == 1) ? "Call" : "Put";
 }
 
 
@@ -158,41 +165,42 @@ int main(int argc, char *argv[])
 	strftime(value_date, 11, "%Y-%m-%d", &value);
 	bsm(&bs_opt);
 	gbm(&mc_opt);
+
+	setlocale(LC_ALL,"");
 	printf(
 		"\nValuation date: %s\n\n"
 		"	              | BS Analytic | BS Monte Carlo |\n"
 		"	 ---------------------------------------------\n"
-		"	 |Type:       | %10.1i  | %13.1i  |\n"
+		"	 |Type:       | %10s  | %13s  |\n"
 		"	 |Spot:       | %10.2f  | %13.2f  |\n"
+		"	 |Expiry:     | %s  |    %s  |\n"
 		"	 |Strike:     | %10.2f  | %13.2f  |\n"
 		"	 |Risk-free:  | %10.2f%% | %13.2f%% |\n"
 		"	 |Implied Vol:| %10.2f%% | %13.2f%% |\n"
-		/*
-		"	 |sims:     | %4.2f| %4.2f|\n"
-		"	 |exp:      | %4.2s| %4.2f|\n"
-		*/
+		"	 ---------------------------------------------\n"
 		"	 |Fair value: |   %8.4f  |   %11.4f  |\n"
 		"	 |Delta:      |   %8.4f  |   %11.4f  |\n"
-		"	 |Vega:       |   %8.4f  |   %11.4f  |\n"
-		"	 |Theta:      |   %8.4f  |   %11.4f  |\n"
-		"	 |Rho:        |   %8.4f  |   %11.4f  |\n",
+		"	 |Gamma:      |   %8.4f  |   %11.4f  |\n",
 		value_date,
-		bs_opt.type, mc_opt.type,
+		read_type(bs_opt), read_type(mc_opt),
 		bs_opt.spot, mc_opt.spot,
+		expiry_date, expiry_date,
 		bs_opt.strike, mc_opt.strike,
 		bs_opt.rfr*100, mc_opt.rfr*100,
 		bs_opt.vol*100, mc_opt.vol*100,
 		bs_opt.fv, mc_opt.fv,
 		bs_opt.delta, mc_opt.delta,
+		bs_opt.gamma, mc_opt.gamma);
+	printf(
+		"	 |Vega:       |   %8.4f  |   %11.4f  |\n"
+		"	 |Theta:      |   %8.4f  |   %11.4f  |\n"
+		"	 |Rho:        |   %8.4f  |   %11.4f  |\n"
+		"	 |Simulations:|             |   %'11ld  |\n"
+		"	 ---------------------------------------------\n\n",
 		bs_opt.vega, mc_opt.vega,
 		bs_opt.theta, mc_opt.theta,
-		bs_opt.rho, mc_opt.rho);
-	printf(
-		"	 ---------------------------------------------\n\n"
-	      );
-	/*
-	printf("%s", buffer1);
-	printf("%s", buffer2);
-	*/
+		bs_opt.rho, mc_opt.rho,
+		            mc_opt.sims);
+
 	return 0;
 }

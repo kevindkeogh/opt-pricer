@@ -22,5 +22,9 @@ void bsm(struct Option *opt)
 	price = opt->spot * normalcdf(d1 * opt->type) * opt->type - opt->strike *
 		exp(-opt->rfr * tte) * normalcdf(d2 * opt->type) * opt->type;
 	opt->fv = price;
-	opt->vega = opt->spot / 100 * exp(-opt->rfr * tte) * pow(tte, 0.5) * normalpdf(d1);
+	opt->delta = (opt->type == 1) ? normalcdf(d1) : normalcdf(d1) - 1;
+	opt->gamma = 1 / (opt->spot * opt->vol * pow(tte, 0.5)) * normalcdf(d1);
+	opt->vega = opt->spot / 100 * pow(tte, 0.5) * normalpdf(d1);
+	opt->rho = opt->type * tte * opt->strike * exp(-opt->rfr * tte) * normalcdf(opt->type * d2) / 100;
+	opt->theta = -opt->type * (opt->rfr * opt->strike * exp(-opt->rfr * tte) * normalcdf(opt->type * d2)) - (opt->vol / (2 * pow(tte, 0.5)) * opt->spot * normalpdf(opt->type * d1));
 }
