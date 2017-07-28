@@ -151,16 +151,6 @@ int main(int argc, char *argv[])
 	bs_opt.type        = mc_opt.type        = type;
 	mc_opt.sims = sims;
 
-	/*
-	mc_opt.spot = spot;
-	mc_opt.strike = strike;
-	mc_opt.expiry_date = &expiry;
-	mc_opt.value_date = &value;
-	mc_opt.rfr = rfr;
-	mc_opt.vol = vol;
-	mc_opt.type = type;
-	*/
-
 	strftime(expiry_date, 11, "%Y-%m-%d", &expiry);
 	strftime(value_date, 11, "%Y-%m-%d", &value);
 	bsm(&bs_opt);

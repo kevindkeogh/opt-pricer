@@ -1,7 +1,7 @@
-Demonstration of a black-scholes model in C
+Demonstration of a Black-Scholes Model in C
 
 Note that there are two models, a pure Monte Carlo implementation
-and the closed form black scholes equation.
+and the closed form Black-Scholes equation.
 
 Recommended number of simulations is 100,000,000 for Gamma convergence, the
 other Greeks converge by 1,000,000.
