@@ -10,3 +10,4 @@ TODO:
  1. Find a C implementation for Sobol sequence so that Gamma convergence
     is faster
  2. Tests...
+ 3. Parallelize code
