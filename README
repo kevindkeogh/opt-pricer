@@ -3,6 +3,41 @@ Demonstration of a Black-Scholes Model in C
 Note that there are two models, a pure Monte Carlo implementation
 and the closed form Black-Scholes equation.
 
+To install:
+	$ git clone https://github.com/kevindkeogh/opt-pricer.git
+	$ cd opt-pricer
+	$ make && sudo make install
+	$ opt-pricer --spot 100 \
+		     --strike 100 \
+		     --rfr 0.03 \
+		     --implied-volatility 0.2 \
+		     --effective-date 2017-12-30 \
+		     --expiry-date 2019-06-30 \
+		     --call \
+		     -N 10000000
+
+
+	   Valuation date: 2017-12-30
+
+		     	         | BS Analytic | BS Monte Carlo |
+		    ---------------------------------------------
+		    |Type:       |       Call  |          Call  |
+		    |Spot:       |     100.00  |        100.00  |
+		    |Expiry:     | 2019-06-30  |    2019-06-30  |
+		    |Strike:     |     100.00  |        100.00  |
+		    |Risk-free:  |       3.00% |          3.00% |
+		    |Implied Vol:|      20.00% |         20.00% |
+		    ---------------------------------------------
+		    |Fair value: |    11.8866  |       11.8941  |
+		    |Delta:      |     0.6202  |        0.6206  |
+		    |Gamma:      |     0.0253  |        0.0134  |
+		    |Vega:       |     0.4660  |        0.4668  |
+		    |Theta:      |    -4.6138  |       -4.6235  |
+		    |Rho:        |     0.7513  |        0.7699  |
+		    |Simulations:|             |   100,000,000  |
+		    ---------------------------------------------
+
+
 Recommended number of simulations is 100,000,000 for Gamma convergence, the
 other Greeks converge by 1,000,000.
 
