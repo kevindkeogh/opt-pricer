@@ -103,7 +103,10 @@ void gbm(struct Option *opt)
     options = malloc(sizeof(struct Option) * NUM_THREADS);
     for(i=0; i<NUM_THREADS; i++) {
         options[i] = *opt;
+        options[i].expiry_date = opt->expiry_date;
+        options[i].value_date = opt->value_date;
     }
+
     threads = malloc(sizeof(pthread_t) * NUM_THREADS);
     opt->sims = opt->sims / NUM_THREADS;
 
