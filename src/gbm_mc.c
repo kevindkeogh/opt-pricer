@@ -101,6 +101,7 @@ void gbm(struct Option *opt)
     pthread_t *threads;
     struct Option *options;
     options = malloc(sizeof(struct Option) * NUM_THREADS);
+    opt->sims = opt->sims / NUM_THREADS;
     for(i=0; i<NUM_THREADS; i++) {
         options[i] = *opt;
         options[i].expiry_date = opt->expiry_date;
@@ -108,7 +109,6 @@ void gbm(struct Option *opt)
     }
 
     threads = malloc(sizeof(pthread_t) * NUM_THREADS);
-    opt->sims = opt->sims / NUM_THREADS;
 
     for(i=0; i<NUM_THREADS; i++) {
         if (pthread_create(&threads[i], NULL, run_simulations, &options[i])) {
@@ -116,11 +116,12 @@ void gbm(struct Option *opt)
         }
     }
     
+    opt->sims = 0;
+
     for(i=0; i<NUM_THREADS; i++) {
         void *res;
         struct Option *result;
         pthread_join(threads[i], &res);
-        printf("got here opt assignment too!\n");
         result = (struct Option*) res;
         opt->fv    += result->fv / NUM_THREADS;
         opt->delta += result->delta / NUM_THREADS;
@@ -130,4 +131,5 @@ void gbm(struct Option *opt)
         opt->rho   += result->rho / NUM_THREADS;
         opt->sims  += result->sims;
     }
+
 }
