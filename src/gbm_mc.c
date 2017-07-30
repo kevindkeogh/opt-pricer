@@ -3,8 +3,16 @@
 
 #include "gbm_mc.h"
 #include "utils.h"
+
 #include <math.h>
+#include <pthread.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
 #include <time.h>
+
+#define NUM_THREADS         8
+
 
 double gbm_simulation(double spot, double rfr, double vol, double tte, double rand)
 {
@@ -17,14 +25,17 @@ double gbm_simulation(double spot, double rfr, double vol, double tte, double ra
 	return spot * exp(drift + stoch);
 }
 
-void gbm(struct Option *opt)
+
+void *run_simulations(void *opt_ptr)
 {
+    int i;
 	double tte, theta_tte, expiry_date, value_date, level, rand, df;
 	double delta_shift = 0, vega_shift = 0, theta_shift = 0, rho_shift = 0;
 	double gamma_shift = 0, base_gamma = 0, upper_gamma = 0, lower_gamma = 0;
 	double price, delta, gamma, vega, theta, rho;
 	double base = 0;
-	int i;
+    
+    struct Option *opt = (struct Option*) opt_ptr;
 
 	if (opt->sims < 1) opt->sims = 1;
 
@@ -79,4 +90,41 @@ void gbm(struct Option *opt)
 	opt->vega = (vega - price) / 0.01;
 	opt->theta = (theta - price) / (tte - theta_tte);
 	opt->rho = (rho - price);
+
+    return (void *) opt;
+}
+
+
+void gbm(struct Option *opt)
+{
+    int i;
+    pthread_t *threads;
+    struct Option *options;
+    options = malloc(sizeof(struct Option) * NUM_THREADS);
+    for(i=0; i<NUM_THREADS; i++) {
+        options[i] = *opt;
+    }
+    threads = malloc(sizeof(pthread_t) * NUM_THREADS);
+    opt->sims = opt->sims / NUM_THREADS;
+
+    for(i=0; i<NUM_THREADS; i++) {
+        if (pthread_create(&threads[i], NULL, run_simulations, &options[i])) {
+            printf("Error in thread creation\n");
+        }
+    }
+    
+    for(i=0; i<NUM_THREADS; i++) {
+        void *res;
+        struct Option *result;
+        pthread_join(threads[i], &res);
+        printf("got here opt assignment too!\n");
+        result = (struct Option*) res;
+        opt->fv    += result->fv / NUM_THREADS;
+        opt->delta += result->delta / NUM_THREADS;
+        opt->gamma += result->gamma / NUM_THREADS;
+        opt->vega  += result->vega / NUM_THREADS;
+        opt->theta += result->theta / NUM_THREADS;
+        opt->rho   += result->rho / NUM_THREADS;
+        opt->sims  += result->sims;
+    }
 }

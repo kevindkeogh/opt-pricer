@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-Wall -fPIC -O3 -ansi -pedantic-errors
+CFLAGS=-Wall -fPIC -O3 -ansi -pedantic-errors -pthread
 LDFLAGS=-lm
 PREFIX= /usr/local
 
