@@ -1,5 +1,5 @@
 #define _XOPEN_SOURCE
-#define max(X,Y) (((X) > (Y)) ? (X) : (Y))
+#define max(X, Y) (((X) > (Y)) ? (X) : (Y))
 
 #include "gbm_mc.h"
 #include "utils.h"
@@ -28,6 +28,8 @@ double gbm_simulation(double spot, double rfr, double vol, double tte, double ra
 
 void *run_simulations(void *opt_ptr)
 {
+	/* A single thread simulation, calculates the PV and Greeks */
+
 	int i;
 	double tte, theta_tte, expiry_date, value_date, level, rand, df;
 	double delta_shift = 0, vega_shift = 0, theta_shift = 0, rho_shift = 0;
@@ -36,16 +38,17 @@ void *run_simulations(void *opt_ptr)
 	double base = 0;
 	double max_rand = 0;
 
-	struct Option *opt = (struct Option*) opt_ptr;
+	struct Option *opt = (struct Option *) opt_ptr;
 
-	if (opt->sims < 1) opt->sims = 1;
+	if (opt->sims < 1)
+		opt->sims = 1;
 
 	expiry_date = mktime(opt->expiry_date);
 	value_date = mktime(opt->value_date);
 	tte = difftime(expiry_date, value_date) / (60 * 60 * 24 * 365);
 	theta_tte = tte - 1. / 365;
 
-	for (i=0; i<opt->sims; i++) {
+	for (i = 0; i < opt->sims; i++) {
 		rand = opt->randoms[i];
 		max_rand = rand > max_rand ? rand : max_rand;
 		/* Base scenario */
@@ -103,30 +106,41 @@ void gbm(struct Option *opt)
 	pthread_t *threads;
 	struct Option *options;
 	double **randoms;
+
 	options = malloc(sizeof(struct Option) * NUM_THREADS);
-	randoms = malloc(sizeof(double*) * NUM_THREADS);
+	randoms = malloc(sizeof(double *) * NUM_THREADS);
+
+	/* Create 2D array */
 	for(i=0; i<NUM_THREADS; i++) {
 		randoms[i] = malloc(sizeof(double) * opt->sims / NUM_THREADS);
 	}
 
-	/* generate array of normal randoms */
-	for(i=0;;) {
-		if (j == (opt->sims / NUM_THREADS)) {
+	/* Fill 2D array with normal randoms
+	 * The purpose is to give the Option structs the random
+	 * numbers they will need for simulations, as opposed to
+	 * having the individual threads do so (rand() is not thread-safe)
+	 */
+	j = 0;
+	i = 0;
+	for(i = 0; i < NUM_THREADS;){
+		randoms[i][j] = gaussrand();
+		if (j >= (opt->sims / NUM_THREADS)) {
 			j = 0;
 			i += 1;
 		}
-
-		if (i == NUM_THREADS) {
-			break;
-		}
-
-		randoms[i][j] = gaussrand();
 		j++;
 	}
 
+	/* Set the number of simulations on a per-thread basis
+	 */
 	opt->sims = opt->sims / NUM_THREADS;
+
 	for(i=0; i<NUM_THREADS; i++) {
 		options[i] = *opt;
+		/* These are pointers, so need to copy them directly,
+		 * otherwise we will probably have 2 threads trying to
+		 * access them at the same time
+		 */
 		options[i].expiry_date = opt->expiry_date;
 		options[i].value_date = opt->value_date;
 		options[i].randoms = randoms[i];
@@ -145,8 +159,9 @@ void gbm(struct Option *opt)
 	for(i=0; i<NUM_THREADS; i++) {
 		void *res;
 		struct Option *result;
+
 		pthread_join(threads[i], &res);
-		result = (struct Option*) res;
+		result = (struct Option *) res;
 		opt->fv    += result->fv / NUM_THREADS;
 		opt->delta += result->delta / NUM_THREADS;
 		opt->gamma += result->gamma / NUM_THREADS;
@@ -155,5 +170,10 @@ void gbm(struct Option *opt)
 		opt->rho   += result->rho / NUM_THREADS;
 		opt->sims  += result->sims;
 	}
+
+	free(threads);
+	for(i=0; i<NUM_THREADS; i++)
+		free(randoms[i]);
+	free(randoms);
 
 }

@@ -10,6 +10,7 @@
 
 #include <locale.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <time.h>
 #include <getopt.h>
@@ -42,7 +43,7 @@ static struct helptext options[] = {
 		"Put or call flag"},
 	{"-h, --help",
 		"This help text"},
-	{ NULL , NULL }
+	{ NULL, NULL }
 };
 
 
@@ -71,7 +72,7 @@ int print_help(void)
 }
 
 
-char* read_type(struct Option opt)
+char *read_type(struct Option opt)
 {
 	return (opt.type == 1) ? "Call" : "Put";
 }
@@ -85,9 +86,6 @@ int main(int argc, char *argv[])
 	struct tm value, expiry;
 	struct Option bs_opt, mc_opt;
 
-	extern char *optarg;
-	extern int getopt_long();
-
 	memset(&expiry, 0, sizeof(expiry));
 	memset(&value, 0, sizeof(value));
 
@@ -95,46 +93,46 @@ int main(int argc, char *argv[])
 
 	while ((opt = getopt_long(argc, argv, "s:k:r:v:d:e:N:cph", long_options, &option_index)) != -1) {
 		switch (opt) {
-			case 's':
-				if (sscanf(optarg, "%lf", &spot) == EOF) {
-					return 1;
-				};
-				break;
-			case 'k': /* strike */
-				if (sscanf(optarg, "%lf", &strike) == EOF) {
-					return 1;
-				};
-				break;
-			case 'r': /* risk-free rate */
-				if (sscanf(optarg, "%lf.", &rfr) == EOF) {
-					return 1;
-				};
-				break;
-			case 'v': /* implied volatility */
-				if (sscanf(optarg, "%lf", &vol) == EOF) {
-					return 1;
-				};
-				break;
-			case 'e': /* expiry date, must be YYYY-MM-DD */
-				strptime(optarg, "%Y-%m-%d", &expiry);
-				break;
-			case 'd': /* valuation date, must be YYYY-MM-DD */
-				strptime(optarg, "%Y-%m-%d", &value);
-				break;
-			case 'N': /* number of simulations */
-				if (sscanf(optarg, "%lf", &sims) == EOF) {
-					return 1;
-				};
-				break;
-			case 'c': /* set as call */
-				type = 1;
-				break;
-			case 'p': /* set as put */
-				type = -1;
-				break;
-			case 'h': /* print help*/
-				print_help();
-				return 0;
+		case 's':
+			if (sscanf(optarg, "%lf", &spot) == EOF) {
+				return 1;
+			};
+			break;
+		case 'k': /* strike */
+			if (sscanf(optarg, "%lf", &strike) == EOF) {
+				return 1;
+			};
+			break;
+		case 'r': /* risk-free rate */
+			if (sscanf(optarg, "%lf.", &rfr) == EOF) {
+				return 1;
+			};
+			break;
+		case 'v': /* implied volatility */
+			if (sscanf(optarg, "%lf", &vol) == EOF) {
+				return 1;
+			};
+			break;
+		case 'e': /* expiry date, must be YYYY-MM-DD */
+			strptime(optarg, "%Y-%m-%d", &expiry);
+			break;
+		case 'd': /* valuation date, must be YYYY-MM-DD */
+			strptime(optarg, "%Y-%m-%d", &value);
+			break;
+		case 'N': /* number of simulations */
+			if (sscanf(optarg, "%lf", &sims) == EOF) {
+				return 1;
+			};
+			break;
+		case 'c': /* set as call */
+			type = 1;
+			break;
+		case 'p': /* set as put */
+			type = -1;
+			break;
+		case 'h': /* print help */
+			print_help();
+			return 0;
 		}
 	}
 	if (spot == 0 || strike == 0 || rfr == 0 || vol == 0) {
@@ -156,7 +154,7 @@ int main(int argc, char *argv[])
 	bsm(&bs_opt);
 	gbm(&mc_opt);
 
-	setlocale(LC_ALL,"");
+	setlocale(LC_ALL, "");
 	printf(
 		"\nValuation date: %s\n\n"
 		"	              | BS Analytic | BS Monte Carlo |\n"

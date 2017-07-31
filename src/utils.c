@@ -35,11 +35,11 @@ double normalpdf(double z)
 }
 
 
-double gaussrand()
+double gaussrand(void)
 {
 	/* Marsaglia and Bray, ``A Convenient Method for Generating Normal Variables'' */
 	static double V1, V2, S;
-	static int phase = 0;
+	static int phase;
 	double X;
 
 	if (phase == 0) {
