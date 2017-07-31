@@ -21,6 +21,7 @@ struct Option {
 	double rfr;
 	double vol;
 	long sims;
+	double *randoms;
 
 	/* fv and greeks */
 	double fv;

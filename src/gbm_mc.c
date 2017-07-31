@@ -28,14 +28,15 @@ double gbm_simulation(double spot, double rfr, double vol, double tte, double ra
 
 void *run_simulations(void *opt_ptr)
 {
-    int i;
+	int i;
 	double tte, theta_tte, expiry_date, value_date, level, rand, df;
 	double delta_shift = 0, vega_shift = 0, theta_shift = 0, rho_shift = 0;
 	double gamma_shift = 0, base_gamma = 0, upper_gamma = 0, lower_gamma = 0;
 	double price, delta, gamma, vega, theta, rho;
 	double base = 0;
-    
-    struct Option *opt = (struct Option*) opt_ptr;
+	double max_rand = 0;
+
+	struct Option *opt = (struct Option*) opt_ptr;
 
 	if (opt->sims < 1) opt->sims = 1;
 
@@ -45,7 +46,8 @@ void *run_simulations(void *opt_ptr)
 	theta_tte = tte - 1. / 365;
 
 	for (i=0; i<opt->sims; i++) {
-		rand = gaussrand();
+		rand = opt->randoms[i];
+		max_rand = rand > max_rand ? rand : max_rand;
 		/* Base scenario */
 		level = gbm_simulation(opt->spot, opt->rfr, opt->vol, tte, rand);
 		base += max((level - opt->strike) * opt->type, 0);
@@ -59,8 +61,8 @@ void *run_simulations(void *opt_ptr)
 		base_gamma = gbm_simulation(opt->spot, opt->rfr, opt->vol, tte, rand);
 		lower_gamma = gbm_simulation(opt->spot - 0.00001, opt->rfr, opt->vol, tte, rand);
 		gamma_shift += (max((upper_gamma - opt->strike) * opt->type, 0) -
-			2 * max((base_gamma - opt->strike) * opt->type, 0) +
-			max((lower_gamma - opt->strike) * opt->type, 0)) /
+				2 * max((base_gamma - opt->strike) * opt->type, 0) +
+				max((lower_gamma - opt->strike) * opt->type, 0)) /
 			pow(0.00001, 2);
 
 		/* Vega scenario */
@@ -91,45 +93,67 @@ void *run_simulations(void *opt_ptr)
 	opt->theta = (theta - price) / (tte - theta_tte);
 	opt->rho = (rho - price);
 
-    return (void *) opt;
+	return (void *) opt;
 }
 
 
 void gbm(struct Option *opt)
 {
-    int i;
-    pthread_t *threads;
-    struct Option *options;
-    options = malloc(sizeof(struct Option) * NUM_THREADS);
-    opt->sims = opt->sims / NUM_THREADS;
-    for(i=0; i<NUM_THREADS; i++) {
-        options[i] = *opt;
-        options[i].expiry_date = opt->expiry_date;
-        options[i].value_date = opt->value_date;
-    }
+	int i = 0, j = 0;
+	pthread_t *threads;
+	struct Option *options;
+	double **randoms;
+	options = malloc(sizeof(struct Option) * NUM_THREADS);
+	randoms = malloc(sizeof(double*) * NUM_THREADS);
+	for(i=0; i<NUM_THREADS; i++) {
+		randoms[i] = malloc(sizeof(double) * opt->sims / NUM_THREADS);
+	}
 
-    threads = malloc(sizeof(pthread_t) * NUM_THREADS);
+	/* generate array of normal randoms */
+	for(i=0;;) {
+		if (j == (opt->sims / NUM_THREADS)) {
+			j = 0;
+			i += 1;
+		}
 
-    for(i=0; i<NUM_THREADS; i++) {
-        if (pthread_create(&threads[i], NULL, run_simulations, &options[i])) {
-            printf("Error in thread creation\n");
-        }
-    }
-    
-    opt->sims = 0;
+		if (i == NUM_THREADS) {
+			break;
+		}
 
-    for(i=0; i<NUM_THREADS; i++) {
-        void *res;
-        struct Option *result;
-        pthread_join(threads[i], &res);
-        result = (struct Option*) res;
-        opt->fv    += result->fv / NUM_THREADS;
-        opt->delta += result->delta / NUM_THREADS;
-        opt->gamma += result->gamma / NUM_THREADS;
-        opt->vega  += result->vega / NUM_THREADS;
-        opt->theta += result->theta / NUM_THREADS;
-        opt->rho   += result->rho / NUM_THREADS;
-        opt->sims  += result->sims;
-    }
+		randoms[i][j] = gaussrand();
+		j++;
+	}
+
+	opt->sims = opt->sims / NUM_THREADS;
+	for(i=0; i<NUM_THREADS; i++) {
+		options[i] = *opt;
+		options[i].expiry_date = opt->expiry_date;
+		options[i].value_date = opt->value_date;
+		options[i].randoms = randoms[i];
+	}
+
+	threads = malloc(sizeof(pthread_t) * NUM_THREADS);
+
+	for(i=0; i<NUM_THREADS; i++) {
+		if (pthread_create(&threads[i], NULL, run_simulations, &options[i])) {
+			printf("Error in thread creation\n");
+		}
+	}
+
+	opt->sims = 0;
+
+	for(i=0; i<NUM_THREADS; i++) {
+		void *res;
+		struct Option *result;
+		pthread_join(threads[i], &res);
+		result = (struct Option*) res;
+		opt->fv    += result->fv / NUM_THREADS;
+		opt->delta += result->delta / NUM_THREADS;
+		opt->gamma += result->gamma / NUM_THREADS;
+		opt->vega  += result->vega / NUM_THREADS;
+		opt->theta += result->theta / NUM_THREADS;
+		opt->rho   += result->rho / NUM_THREADS;
+		opt->sims  += result->sims;
+	}
 
 }
