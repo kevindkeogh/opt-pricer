@@ -1,7 +1,8 @@
 Demonstration of a Black-Scholes Model in C
 
 Note that there are two models, a pure Monte Carlo implementation
-and the closed form Black-Scholes equation.
+and the closed form Black-Scholes equation. Note that the code runs
+multi-threaded.
 
 To install:
 	$ git clone https://github.com/kevindkeogh/opt-pricer.git
@@ -45,4 +46,3 @@ TODO:
  1. Find a C implementation for Sobol sequence so that Gamma convergence
     is faster
  2. Tests...
- 3. Parallelize code
