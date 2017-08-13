@@ -10,8 +10,9 @@ WINDOWS_PLATFORM= windows
 
 .DEFAULT_GOAL := build/opt-pricer
 
-build/opt-pricer : src/opt-pricer.c build/depends/linux/gbm.o build/depends/linux/black_scholes.o build/depends/linux/utils.o build/depends/linux/sobol.o build/depends/linux/asa241.o
-	@$(CC) $(CFLAGS) $^ $(LDFLAGS) -o $@
+build/opt-pricer : src/opt-pricer.c build/depends/linux/gbm.o build/depends/linux/black_scholes.o build/depends/linux/utils.o
+	@$(MAKE) -s build/libs/libstats.so
+	@$(CC) $(CFLAGS) $^ $(LDFLAGS) -o $@ -Wl,-rpath='$$ORIGIN/libs' -Lbuild/libs -lstats
 
 build/depends/%/gbm.o : src/gbm_mc.c | folders
 	@$(CC) $(CFLAGS) -c $^ $(LDFLAGS) -o $@
@@ -31,8 +32,12 @@ build/depends/%/asa241.o : src/asa241.c | folders
 build/depends/%/sobol.o : src/sobol.cpp | folders
 	@$(CC) $(CFLAGS) $(CPPFLAGS) -c $^ $(LDFLAGS) -o $@
 
+build/libs/libstats.so : build/depends/linux/sobol.o build/depends/linux/asa241.o | folders
+	@$(CC) -fPIC -shared -o $@ $^ -lstdc++
+
 folders:
 	@mkdir -p build
+	@mkdir -p build/libs
 	@mkdir -p build/depends
 	@mkdir -p build/depends/linux
 	@mkdir -p build/depends/windows
