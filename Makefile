@@ -4,7 +4,7 @@ LDFLAGS=-lm
 PREFIX= /usr/local
 
 WINDOWS_CC=x86_64-w64-mingw32-gcc
-WINDOWS_CFLAGS= -Wall -O3 -ansi -pedantic-errors
+WINDOWS_CFLAGS= -Wall -O3 -ansi -pedantic-errors -pthread
 WINDOWS_PLATFORM= windows
 
 .DEFAULT_GOAL := build/opt-pricer
