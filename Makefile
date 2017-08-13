@@ -1,7 +1,8 @@
 CC=gcc
-CFLAGS=-Wall -fPIC -O3 -ansi -pedantic-errors -pthread
-LDFLAGS=-lm
-PREFIX= /usr/local
+CFLAGS=-Wall -g -fPIC -O3 -pthread
+CPPFLAGS=-pedantic -std=c++11
+LDFLAGS=-lm -lstdc++
+PREFIX=/usr/local
 
 WINDOWS_CC=x86_64-w64-mingw32-gcc
 WINDOWS_CFLAGS= -Wall -O3 -ansi -pedantic-errors -pthread
@@ -9,7 +10,7 @@ WINDOWS_PLATFORM= windows
 
 .DEFAULT_GOAL := build/opt-pricer
 
-build/opt-pricer : src/opt-pricer.c build/depends/linux/gbm.o build/depends/linux/black_scholes.o build/depends/linux/utils.o
+build/opt-pricer : src/opt-pricer.c build/depends/linux/gbm.o build/depends/linux/black_scholes.o build/depends/linux/utils.o build/depends/linux/sobol.o build/depends/linux/asa241.o
 	@$(CC) $(CFLAGS) $^ $(LDFLAGS) -o $@
 
 build/depends/%/gbm.o : src/gbm_mc.c | folders
@@ -23,6 +24,12 @@ build/depends/%/utils.o : src/utils.c | folders
 
 build/depends/%/strptime.o : src/strptime.c | folders
 	@$(CC) $(CFLAGS) -c $^ $(LDFLAGS) -o $@
+
+build/depends/%/asa241.o : src/asa241.c | folders
+	@$(CC) $(CFLAGS) -c $^ $(LDFLAGS) -o $@
+
+build/depends/%/sobol.o : src/sobol.cpp | folders
+	@$(CC) $(CFLAGS) $(CPPFLAGS) -c $^ $(LDFLAGS) -o $@
 
 folders:
 	@mkdir -p build

@@ -2,7 +2,9 @@
 #define max(X, Y) (((X) > (Y)) ? (X) : (Y))
 
 #include "gbm_mc.h"
+#include "sobol.h"
 #include "utils.h"
+#include "asa241.h"
 
 #include <math.h>
 #include <pthread.h>
@@ -103,23 +105,30 @@ void *run_simulations(void *opt_ptr)
 void gbm(struct Option *opt)
 {
 	int i = 0, j = 0;
+	int seed;
+	int nrandoms;
 	pthread_t *threads;
 	struct Option *options;
 	double **randoms;
 
+	seed = (unsigned)time(NULL);
 	options = malloc(sizeof(struct Option) * NUM_THREADS);
+	nrandoms = opt->sims / NUM_THREADS;
 	randoms = malloc(sizeof(double *) * NUM_THREADS);
 
 	/* Create 2D array */
 	for(i=0; i<NUM_THREADS; i++) {
 		randoms[i] = malloc(sizeof(double) * opt->sims / NUM_THREADS);
+		randoms[i] = i8_sobol_generate(1, nrandoms, (seed + nrandoms * i));
+		for(j=0; j<nrandoms; j++) {
+			randoms[i][j] = r8_normal_01_cdf_inverse(randoms[i][j]);
+		}
 	}
 
 	/* Fill 2D array with normal randoms
 	 * The purpose is to give the Option structs the random
 	 * numbers they will need for simulations, as opposed to
 	 * having the individual threads do so (rand() is not thread-safe)
-	 */
 	j = 0;
 	i = 0;
 	for(i = 0; i < NUM_THREADS;){
@@ -130,7 +139,7 @@ void gbm(struct Option *opt)
 		}
 		j++;
 	}
-
+	*/
 	/* Set the number of simulations on a per-thread basis
 	 */
 	opt->sims = opt->sims / NUM_THREADS;
