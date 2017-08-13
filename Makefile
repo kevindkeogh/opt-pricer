@@ -12,7 +12,7 @@ WINDOWS_PLATFORM= windows
 
 build/opt-pricer : src/opt-pricer.c build/depends/linux/gbm.o build/depends/linux/black_scholes.o build/depends/linux/utils.o
 	@$(MAKE) -s build/libs/libstats.so
-	@$(CC) $(CFLAGS) $^ $(LDFLAGS) -o $@ -Wl,-rpath='$$ORIGIN/libs' -Lbuild/libs -lstats
+	@$(CC) $(CFLAGS) $^ $(LDFLAGS) -o $@ -Wl,-rpath,'$$ORIGIN/libs' -Lbuild/libs -lstats
 
 build/depends/%/gbm.o : src/gbm_mc.c | folders
 	@$(CC) $(CFLAGS) -c $^ $(LDFLAGS) -o $@
