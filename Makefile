@@ -3,6 +3,7 @@ CFLAGS=-Wall -g -fPIC -O3 -pthread
 CPPFLAGS=-pedantic -std=c++11
 LDFLAGS=-lm -lstdc++
 PREFIX=/usr/local
+THIS_DIR=$(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 
 WINDOWS_CC=x86_64-w64-mingw32-gcc
 WINDOWS_CFLAGS= -Wall -O3 -ansi -pedantic-errors -pthread
@@ -55,8 +56,7 @@ windows: build/opt-pricer.exe
 .PHONY: install
 install : build/opt-pricer
 	@mkdir -p $(DESTDIR)$(PREFIX)/bin
-	@cp $< $(DESTDIR)$(PREFIX)/bin/opt-pricer
-	@rm -f $<
+	@ln -sf $(THIS_DIR)$< $(DESTDIR)$(PREFIX)/bin/opt-pricer
 
 .PHONY: uninstall
 uninstall :
@@ -65,5 +65,3 @@ uninstall :
 .PHONY: clean
 clean :
 	@rm -rf build
-	@mkdir build
-	@mkdir build/depends

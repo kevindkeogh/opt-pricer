@@ -38,7 +38,6 @@ void *run_simulations(void *opt_ptr)
 	double gamma_shift = 0, base_gamma = 0, upper_gamma = 0, lower_gamma = 0;
 	double price, delta, gamma, vega, theta, rho;
 	double base = 0;
-	double max_rand = 0;
 
 	struct Option *opt = (struct Option *) opt_ptr;
 
@@ -52,7 +51,7 @@ void *run_simulations(void *opt_ptr)
 
 	for (i = 0; i < opt->sims; i++) {
 		rand = opt->randoms[i];
-		max_rand = rand > max_rand ? rand : max_rand;
+
 		/* Base scenario */
 		level = gbm_simulation(opt->spot, opt->rfr, opt->vol, tte, rand);
 		base += max((level - opt->strike) * opt->type, 0);
@@ -83,13 +82,13 @@ void *run_simulations(void *opt_ptr)
 		rho_shift += max((level - opt->strike) * opt->type, 0);
 	}
 
-	df = 1 / pow((1 + opt->rfr), tte);
+	df = exp(-opt->rfr * tte);
 	price = base / opt->sims * df;
 	delta = delta_shift / opt->sims * df;
 	gamma = gamma_shift / opt->sims * df;
 	vega = vega_shift / opt->sims * df;
-	theta = theta_shift / opt->sims * 1 / pow((1 + opt->rfr), tte - 1./365.);
-	rho = rho_shift / opt->sims * 1 / pow((1 + opt->rfr + 0.01), tte);
+	theta = theta_shift / opt->sims * exp(-opt->rfr * theta_tte);
+	rho = rho_shift / opt->sims * exp(-1 * (opt->rfr + 0.01)  * tte);
 
 	opt->fv = price;
 	opt->delta = (delta - price) / 0.0001;
@@ -125,39 +124,20 @@ void gbm(struct Option *opt)
 		}
 	}
 
-	/* Fill 2D array with normal randoms
-	 * The purpose is to give the Option structs the random
-	 * numbers they will need for simulations, as opposed to
-	 * having the individual threads do so (rand() is not thread-safe)
-	j = 0;
-	i = 0;
-	for(i = 0; i < NUM_THREADS;){
-		randoms[i][j] = gaussrand();
-		if (j >= (opt->sims / NUM_THREADS)) {
-			j = 0;
-			i += 1;
-		}
-		j++;
-	}
-	*/
-	/* Set the number of simulations on a per-thread basis
-	 */
+	/* Set the number of simulations on a per-thread basis */
 	opt->sims = opt->sims / NUM_THREADS;
+	threads = malloc(sizeof(pthread_t) * NUM_THREADS);
 
 	for(i=0; i<NUM_THREADS; i++) {
 		options[i] = *opt;
-		/* These are pointers, so need to copy them directly,
+		/* The dates pointers, so need to copy them directly,
 		 * otherwise we will probably have 2 threads trying to
 		 * access them at the same time
 		 */
 		options[i].expiry_date = opt->expiry_date;
 		options[i].value_date = opt->value_date;
 		options[i].randoms = randoms[i];
-	}
 
-	threads = malloc(sizeof(pthread_t) * NUM_THREADS);
-
-	for(i=0; i<NUM_THREADS; i++) {
 		if (pthread_create(&threads[i], NULL, run_simulations, &options[i])) {
 			printf("Error in thread creation\n");
 		}
@@ -180,9 +160,8 @@ void gbm(struct Option *opt)
 		opt->sims  += result->sims;
 	}
 
-	free(threads);
 	for(i=0; i<NUM_THREADS; i++)
 		free(randoms[i]);
 	free(randoms);
-
+	free(threads);
 }
