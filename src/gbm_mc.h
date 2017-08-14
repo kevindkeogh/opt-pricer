@@ -1,3 +1,5 @@
+/* vim:filetype=c
+ */
 #ifndef GBM_MC
 #define GBM_MC
 

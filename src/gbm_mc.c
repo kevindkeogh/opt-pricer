@@ -1,3 +1,5 @@
+/* vim:filetype=c
+ */
 #define _XOPEN_SOURCE
 #define max(X, Y) (((X) > (Y)) ? (X) : (Y))
 

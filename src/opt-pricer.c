@@ -1,3 +1,5 @@
+/* vim:filetype=c
+ */
 #define _XOPEN_SOURCE
 
 #include "black_scholes.h"

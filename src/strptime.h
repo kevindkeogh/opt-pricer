@@ -1,3 +1,5 @@
+/* vim:filetype=c
+ */
 #ifndef STRPTIME_H
 #define STRPTIME_H
 

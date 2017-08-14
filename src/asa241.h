@@ -1,3 +1,5 @@
+/* vim:filetype=c
+ */
 void normal_01_cdf_values ( int *n_data, double *x, double *fx );
 float r4_huge ( );
 float r4_normal_01_cdf_inverse ( float p );

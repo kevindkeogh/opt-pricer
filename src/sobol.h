@@ -1,3 +1,5 @@
+/* vim:filetype=c
+ */
 #include <stdint.h>
 
 #ifdef __cplusplus

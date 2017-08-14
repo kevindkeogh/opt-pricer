@@ -1,3 +1,5 @@
+/* vim:filetype=c
+ */
 #ifndef BLACK_SCHOLES_H_
 #define BLACK_SCHOLES_H_
 
