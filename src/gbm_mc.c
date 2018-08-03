@@ -164,6 +164,7 @@ void gbm(struct Option *opt)
 
 	for(i=0; i<NUM_THREADS; i++)
 		free(randoms[i]);
+	free(options);
 	free(randoms);
 	free(threads);
 }
